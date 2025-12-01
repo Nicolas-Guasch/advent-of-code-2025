@@ -35,7 +35,7 @@ std::string part2(std::ifstream& inputFile) {
     }
 
     std::stringstream ss;
-    ss << "Door password: " << password;
+    ss << "Door password using password method 0x434C49434B: " << password;
     return ss.str();
 }
 

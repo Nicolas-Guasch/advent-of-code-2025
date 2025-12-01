@@ -1,0 +1,8 @@
+# Ignore extensionless executable files (compiled binaries)
+# Strategy: ignore everything, then allow back directories and files with extensions
+*
+!*/
+!*.*
+
+# Ignore input files
+*.in

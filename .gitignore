@@ -6,3 +6,7 @@
 
 # Ignore input files
 *.in
+
+# Rust build artifacts
+target/
+Cargo.lock

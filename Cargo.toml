@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+    "solutions/day-1/rust",
+    "solutions/day-2/rust",
+    "solutions/day-3/rust",
+    "solutions/day-4/rust",
+    "solutions/day-5/rust",
+    "solutions/day-6/rust",
+    "solutions/day-7/rust",
+    "solutions/day-8/rust",
+    "solutions/day-9/rust",
+    "solutions/day-10/rust",
+    "solutions/day-11/rust",
+    "solutions/day-12/rust",
+]

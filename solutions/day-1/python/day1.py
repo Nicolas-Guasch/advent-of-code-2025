@@ -1,24 +1,25 @@
 DIALLEN = 100
+
+def parse_rotation(s):
+    return (-1 if s[0] == "L" else 1) * int(s[1:])
+
 def part1(lines):
     position, password = 50, 0
-    for rotation in lines:
-        delta = (-1 if rotation[0] == "L" else 1) * int(rotation[1:])
-        position = (position + delta) % DIALLEN
-        if position == 0:
-            password += 1
+    for rotation in map(parse_rotation, lines):
+        position = (position + rotation) % DIALLEN
+        password += (position == 0)
     return f"Door password: {password}"
 
 def part2(lines):
     position, password = 50, 0
-    for rotation in lines:
-        delta = (-1 if rotation[0] == "L" else 1) * int(rotation[1:])
-        password += (position != 0) - int((position + delta) / DIALLEN) if position + delta <= 0 else (position + delta) // DIALLEN
-        position = (position + delta) % DIALLEN
+    for rotation in map(parse_rotation, lines):
+        password += (position != 0) - int((position + rotation) / DIALLEN) if position + rotation <= 0 else (position + rotation) // DIALLEN
+        position = (position + rotation) % DIALLEN
     return f"Door password using password method 0x434C49434B: {password}"
 
-fileName = "day1.in"
+file_name = "day1.in"
 
-with open(fileName, "r") as input:
-    lines = input.read().split()
+with open(file_name, "r") as input_file:
+    lines = input_file.read().split()
     print(part1(lines))
     print(part2(lines))

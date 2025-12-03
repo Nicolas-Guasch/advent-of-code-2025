@@ -10,27 +10,32 @@ fn parse_rotation(rotation: &str) -> i32 {
 const DIAL_LEN: i32 = 100;
 
 fn part1(rotations: &Vec<&str>) -> i32 {
-    let mut position = 50;
-    let mut password = 0;
-    for &rotation in rotations {
-        position = ((position + parse_rotation(rotation)) % DIAL_LEN + DIAL_LEN) % DIAL_LEN;
-        password += (position == 0) as i32;
-    }
+    let (_final_position, password) = rotations.iter().map(|&r| parse_rotation(r)).fold(
+        (50, 0),
+        |(position, password), rotation| {
+            let next_position = (position + rotation).rem_euclid(DIAL_LEN);
+            (next_position, password + (next_position == 0) as i32)
+        },
+    );
     password
 }
 
 fn part2(rotations: &Vec<&str>) -> i32 {
-    let mut position = 50;
-    let mut password = 0;
-    for &rotation in rotations {
-        let delta = parse_rotation(rotation);
-        password += if position + delta <= 0 {
-            (position != 0) as i32 - (position + delta) / DIAL_LEN
-        } else {
-            (position + delta) / DIAL_LEN
-        };
-        position = ((position + delta) % DIAL_LEN + DIAL_LEN) % DIAL_LEN;
-    }
+    let (_final_position, password) = rotations.iter().map(|&r| parse_rotation(r)).fold(
+        (50, 0),
+        |(position, password), rotation| {
+            let shifted_pos = position + rotation;
+            (
+                shifted_pos.rem_euclid(DIAL_LEN),
+                password
+                    + if shifted_pos <= 0 {
+                        (position != 0) as i32 - shifted_pos / DIAL_LEN
+                    } else {
+                        shifted_pos / DIAL_LEN
+                    },
+            )
+        },
+    );
     password
 }
 

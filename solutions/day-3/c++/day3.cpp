@@ -25,21 +25,30 @@ std::string part1(std::ifstream &inputFile) {
 
 #define DIGITS 12
 
-long long int dp(int size, int digits, std::string &batteryBank,
-                 std::vector<std::vector<long long int>> &memo) {
-    if (!digits)
-        return 0;
-    if (!size)
-        return -1;
-    if (memo[size][digits] != -2)
-        return memo[size][digits];
-    long long int &result = memo[size][digits] = -1;
-    long long int joltage = batteryBank[size - 1] - '0';
-    long long int off = dp(size - 1, digits, batteryBank, memo),
-                  on = dp(size - 1, digits - 1, batteryBank, memo);
-    if (on != -1)
-        on = on * 10 + joltage;
-    result = std::max(off, on);
+int maxJoltagePosition(std::string &batteryBank, int pos, int window) {
+    int maxJoltage = 0;
+    int maxPos = -1;
+    for (int i = pos; i < pos + window; i++) {
+        int joltage = batteryBank[i] - '0';
+        if (joltage > maxJoltage) {
+            maxJoltage = joltage;
+            maxPos = i;
+        }
+    }
+    return maxPos;
+}
+
+long long int greedy(std::string &batteryBank) {
+    long long int result = 0;
+    int digits = DIGITS;
+    int pos = 0;
+    while (digits) {
+        int window = ((int)batteryBank.size() - pos) - digits + 1;
+        int bestPos = maxJoltagePosition(batteryBank, pos, window);
+        result = result * 10 + batteryBank[bestPos] - '0';
+        digits--;
+        pos = bestPos + 1;
+    }
     return result;
 }
 
@@ -49,7 +58,7 @@ std::string part2(std::ifstream &inputFile) {
     while (inputFile >> batteryBank) {
         std::vector<std::vector<long long int>> memo(
             batteryBank.size() + 1, std::vector<long long int>(DIGITS + 1, -2));
-        totalJoltage += dp((int)batteryBank.size(), DIGITS, batteryBank, memo);
+        totalJoltage += greedy(batteryBank);
     }
     std::stringstream ss;
     ss << "The total output joltage is: " << totalJoltage;

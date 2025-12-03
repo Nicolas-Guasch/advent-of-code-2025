@@ -52,7 +52,7 @@ std::string part2(std::ifstream &inputFile) {
         totalJoltage += greedy(batteryBank);
     }
     return std::format(
-        "The total output joltage with twelve battery per bank is: {}",
+        "The total output joltage with twelve batteries per bank is: {}",
         totalJoltage);
 }
 

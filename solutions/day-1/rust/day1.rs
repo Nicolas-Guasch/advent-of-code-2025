@@ -1,7 +1,7 @@
 use std::fs;
 
 fn parse_rotation(rotation: &str) -> i32 {
-    (if rotation.starts_with("L") { -1 } else { 1 })
+    (if rotation.starts_with('L') { -1 } else { 1 })
         * rotation[1..]
             .parse::<i32>()
             .expect("Failed to parse rotation")
@@ -9,7 +9,7 @@ fn parse_rotation(rotation: &str) -> i32 {
 
 const DIAL_LEN: i32 = 100;
 
-fn part1(rotations: &Vec<&str>) -> i32 {
+fn part1(rotations: &[&str]) -> i32 {
     let (_final_position, password) = rotations.iter().map(|&r| parse_rotation(r)).fold(
         (50, 0),
         |(position, password), rotation| {
@@ -20,7 +20,7 @@ fn part1(rotations: &Vec<&str>) -> i32 {
     password
 }
 
-fn part2(rotations: &Vec<&str>) -> i32 {
+fn part2(rotations: &[&str]) -> i32 {
     let (_final_position, password) = rotations.iter().map(|&r| parse_rotation(r)).fold(
         (50, 0),
         |(position, password), rotation| {

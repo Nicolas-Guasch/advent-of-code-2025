@@ -27,7 +27,7 @@ fn parse_intervals(input: &str) -> Vec<(i64, i64)> {
                 })
                 .expect("Failed to parse interval")
         })
-        .collect::<Vec<(i64, i64)>>()
+        .collect()
 }
 
 fn repeat_digits(id: i64, times: usize) -> i128 {
@@ -42,7 +42,7 @@ fn included(id: i64, intervals: &[(i64, i64)]) -> bool {
 }
 fn part1(input: &str) -> i64 {
     let intervals = parse_intervals(input);
-    let max_id: i64 = upper_bound(&intervals);
+    let max_id = upper_bound(&intervals);
     (0..max_id)
         .take_while(|&id| repeat_digits(id, 2) <= max_id as i128)
         .map(|id| repeat_digits(id, 2))
@@ -52,17 +52,17 @@ fn part1(input: &str) -> i64 {
 
 fn part2(input: &str) -> i64 {
     let intervals = parse_intervals(input);
-    let max_id: i64 = upper_bound(&intervals);
+    let max_id = upper_bound(&intervals);
     let max_digits: usize = digits_number(max_id);
     (2..max_digits)
         .flat_map(|t| {
-            (0..max_id)
-                .take_while(move |&id| repeat_digits(id, t) <= max_id as i128)
+            (0..)
                 .map(move |id| repeat_digits(id, t))
+                .take_while(move |&id| id <= max_id as i128)
                 .filter(|&id| included(id as i64, &intervals))
         })
         .collect::<HashSet<i128>>()
-        .iter()
+        .into_iter()
         .sum::<i128>() as i64
 }
 

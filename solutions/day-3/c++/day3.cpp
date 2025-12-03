@@ -28,7 +28,7 @@ constexpr int DIGITS = 12;
 int maxJoltagePosition(std::string_view batteryBank, int pos, int window) {
     auto subrange = batteryBank.substr(pos, window);
     auto it = std::ranges::max_element(subrange);
-    return pos + std::distance(subrange.begin(), it);
+    return pos + static_cast<int>(std::distance(subrange.begin(), it));
 }
 
 long long int greedy(std::string_view batteryBank) {
@@ -36,7 +36,7 @@ long long int greedy(std::string_view batteryBank) {
     int digits = DIGITS;
     int pos = 0;
     while (digits) {
-        int window = (std::ssize(batteryBank) - pos) - digits + 1;
+        int window = (static_cast<int>(batteryBank.size()) - pos) - digits + 1;
         int bestPos = maxJoltagePosition(batteryBank, pos, window);
         result = result * 10 + batteryBank[bestPos] - '0';
         digits--;

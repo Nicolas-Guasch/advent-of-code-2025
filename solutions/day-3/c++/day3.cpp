@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <vector>
 
 std::string part1(std::ifstream &inputFile) {
     int totalJoltage = 0;

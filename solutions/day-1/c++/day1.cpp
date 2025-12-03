@@ -1,42 +1,40 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
-#include <sstream>
 
-#define DIALLEN 100
+constexpr int DIALLEN = 100;
 
-
-std::string part1(std::ifstream& inputFile) {
+std::string part1(std::ifstream &inputFile) {
     int dialPosition = 50;
     int password = 0;
     std::string line;
     while (inputFile >> line) {
-        int rotation  = (line[0] == 'L' ? -1 : 1) * std::stoi(line.substr(1));
-        dialPosition = ((dialPosition + rotation) % DIALLEN + DIALLEN) % DIALLEN;
-        if (!dialPosition) password++;
+        int rotation = (line[0] == 'L' ? -1 : 1) * std::stoi(line.substr(1));
+        dialPosition =
+            ((dialPosition + rotation) % DIALLEN + DIALLEN) % DIALLEN;
+        if (!dialPosition)
+            password++;
     }
 
-    std::stringstream ss;
-    ss << "Door password: " << password;
-    return ss.str();
+    return std::format("Door password: {}", password);
 }
 
-std::string part2(std::ifstream& inputFile) {
+std::string part2(std::ifstream &inputFile) {
     int dialPosition = 50;
     int password = 0;
     std::string line;
     while (inputFile >> line) {
-        int rotation  = (line[0] == 'L' ? -1 : 1) * std::stoi(line.substr(1));
-        password += 
-            (dialPosition + rotation <= 0) ?
-            (dialPosition != 0) - (dialPosition + rotation) / DIALLEN:
-            (dialPosition + rotation) / DIALLEN;
-        dialPosition = ((dialPosition + rotation) % DIALLEN + DIALLEN) % DIALLEN;
+        int rotation = (line[0] == 'L' ? -1 : 1) * std::stoi(line.substr(1));
+        password +=
+            (dialPosition + rotation <= 0)
+                ? (dialPosition != 0) - (dialPosition + rotation) / DIALLEN
+                : (dialPosition + rotation) / DIALLEN;
+        dialPosition =
+            ((dialPosition + rotation) % DIALLEN + DIALLEN) % DIALLEN;
     }
 
-    std::stringstream ss;
-    ss << "Door password using password method 0x434C49434B: " << password;
-    return ss.str();
+    return std::format("Door password using password method 0x434C49434B: {}",
+                       password);
 }
 
 int main() {
@@ -59,6 +57,6 @@ int main() {
     }
 
     std::cout << part2(inputFile) << std::endl;
-    
+
     return 0;
 }

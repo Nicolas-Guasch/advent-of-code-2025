@@ -1,15 +1,16 @@
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <sstream>
+#include <ranges>
 
 std::string part1(std::ifstream &inputFile) {
     int totalJoltage = 0;
-    std::string batteryBank;
-    while (inputFile >> batteryBank) {
+    for (const auto &batteryBank :
+         std::views::istream<std::string>(inputFile)) {
         int maxJoltage = 0;
         int highestBattery = batteryBank[0] - '0';
-        for (int i = 1; i < (int)batteryBank.size(); i++) {
+        for (int i = 1; i < std::ssize(batteryBank); i++) {
             int batteryJoltage = batteryBank[i] - '0';
             int producedJoltage = highestBattery * 10 + batteryJoltage;
             maxJoltage = std::max(maxJoltage, producedJoltage);
@@ -17,32 +18,25 @@ std::string part1(std::ifstream &inputFile) {
         }
         totalJoltage += maxJoltage;
     }
-    std::stringstream ss;
-    ss << "The total output joltage is: " << totalJoltage;
-    return ss.str();
+    return std::format(
+        "The total output joltage with two batteries per bank is: {}",
+        totalJoltage);
 }
 
-#define DIGITS 12
+constexpr int DIGITS = 12;
 
-int maxJoltagePosition(std::string &batteryBank, int pos, int window) {
-    int maxJoltage = 0;
-    int maxPos = -1;
-    for (int i = pos; i < pos + window; i++) {
-        int joltage = batteryBank[i] - '0';
-        if (joltage > maxJoltage) {
-            maxJoltage = joltage;
-            maxPos = i;
-        }
-    }
-    return maxPos;
+int maxJoltagePosition(std::string_view batteryBank, int pos, int window) {
+    auto subrange = batteryBank.substr(pos, window);
+    auto it = std::ranges::max_element(subrange);
+    return pos + std::distance(subrange.begin(), it);
 }
 
-long long int greedy(std::string &batteryBank) {
+long long int greedy(std::string_view batteryBank) {
     long long int result = 0;
     int digits = DIGITS;
     int pos = 0;
     while (digits) {
-        int window = ((int)batteryBank.size() - pos) - digits + 1;
+        int window = (std::ssize(batteryBank) - pos) - digits + 1;
         int bestPos = maxJoltagePosition(batteryBank, pos, window);
         result = result * 10 + batteryBank[bestPos] - '0';
         digits--;
@@ -53,29 +47,41 @@ long long int greedy(std::string &batteryBank) {
 
 std::string part2(std::ifstream &inputFile) {
     long long int totalJoltage = 0;
-    std::string batteryBank;
-    while (inputFile >> batteryBank) {
+    for (const auto &batteryBank :
+         std::views::istream<std::string>(inputFile)) {
         totalJoltage += greedy(batteryBank);
     }
-    std::stringstream ss;
-    ss << "The total output joltage is: " << totalJoltage;
-    return ss.str();
+    return std::format(
+        "The total output joltage with twelve battery per bank is: {}",
+        totalJoltage);
 }
+
 int main() {
-    std::string inputFileName = "day3.in";
+    namespace fs = std::filesystem;
+    fs::path inputFileName = "day3.in";
+
+    if (!fs::exists(inputFileName)) {
+        std::cerr << std::format("File {} does not exist.",
+                                 inputFileName.string())
+                  << std::endl;
+        return 1;
+    }
+
     std::ifstream inputFile;
     inputFile.open(inputFileName);
 
-    if (!inputFile.is_open()) {
-        std::cerr << "Couldn't open" << inputFileName << "." << std::endl;
+    if (!inputFile) {
+        std::cerr << std::format("Couldn't open {}.", inputFileName.string())
+                  << std::endl;
         return 1;
     }
 
     std::cout << part1(inputFile) << std::endl;
     inputFile.close();
     inputFile.open(inputFileName);
-    if (!inputFile.is_open()) {
-        std::cerr << "Couldn't open" << inputFileName << "." << std::endl;
+    if (!inputFile) {
+        std::cerr << std::format("Couldn't open {}.", inputFileName.string())
+                  << std::endl;
         return 1;
     }
     std::cout << part2(inputFile) << std::endl;

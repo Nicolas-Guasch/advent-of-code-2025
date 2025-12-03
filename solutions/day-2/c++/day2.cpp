@@ -5,14 +5,13 @@
 #include <numeric>
 #include <ranges>
 #include <set>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#define MAXID 10000017929
-#define MAXDIGITS 11
-#define MAXPATTERN 99999 + 1
+constexpr long long int MAXID = 10000017929LL;
+constexpr int MAXDIGITS = 11;
+constexpr int MAXPATTERN = 99999 + 1;
 
 struct interval {
     long long int a;
@@ -78,9 +77,7 @@ std::string part1(std::ifstream &inputFile) {
         }
     }
 
-    std::stringstream ss;
-    ss << "Sum of invalid IDs: " << invalidSum;
-    return ss.str();
+    return std::format("Sum of invalid IDs: {}", invalidSum);
 }
 
 long long int repeatDigits(long long int id, int times) {
@@ -112,10 +109,9 @@ std::string part2(std::ifstream &inputFile) {
         }
     }
 
-    std::stringstream ss;
-    ss << "Sum of invalid IDs, : "
-       << std::accumulate(invalidIds.begin(), invalidIds.end(), 0LL);
-    return ss.str();
+    return std::format(
+        "Sum of invalid IDs, : {}",
+        std::accumulate(invalidIds.begin(), invalidIds.end(), 0LL));
 }
 
 int main() {

@@ -56,8 +56,6 @@ std::string part2(std::ifstream &inputFile) {
     long long int totalJoltage = 0;
     std::string batteryBank;
     while (inputFile >> batteryBank) {
-        std::vector<std::vector<long long int>> memo(
-            batteryBank.size() + 1, std::vector<long long int>(DIGITS + 1, -2));
         totalJoltage += greedy(batteryBank);
     }
     std::stringstream ss;

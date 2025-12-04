@@ -1,25 +1,31 @@
 use std::fs;
 
 fn max_joltage(battery_bank: &str) -> i64 {
-    let joltages: Vec<i64> = battery_bank
+    let mut joltages = battery_bank
         .chars()
-        .map(|c| c.to_digit(10).expect("Failed to parse digit") as i64)
-        .collect();
-    let max_prefixes = joltages.iter().scan(0, |acc, &x| {
-        *acc = (*acc).max(x);
-        Some(*acc)
-    });
+        .map(|c| c.to_digit(10).expect("Failed to parse digit") as i64);
+
+    let first_joltage = match joltages.next() {
+        Some(d) => d,
+        None => return 0,
+    };
+
     joltages
-        .iter()
-        .skip(1)
-        .zip(max_prefixes)
-        .map(|(d, p)| p * 10 + d)
-        .max()
-        .expect("Failed to find max joltage")
+        .fold(
+            (first_joltage, 0),
+            |(max_digit, max_joltage), current_digit| {
+                let produced_joltage = max_digit * 10 + current_digit;
+                (
+                    max_digit.max(current_digit),
+                    max_joltage.max(produced_joltage),
+                )
+            },
+        )
+        .1
 }
 
-fn part1(input: &[&str]) -> i64 {
-    input.iter().map(|&s| max_joltage(s)).sum()
+fn part1(input: &str) -> i64 {
+    input.lines().map(max_joltage).sum()
 }
 
 fn max_joltage_position(values: &[i64], pos: usize, window: usize) -> usize {
@@ -53,14 +59,14 @@ fn greedy(battery_bank: &str) -> i64 {
         .1
 }
 
-fn part2(input: &[&str]) -> i64 {
-    input.iter().map(|&s| greedy(s)).sum()
+fn part2(input: &str) -> i64 {
+    input.lines().map(greedy).sum()
 }
 
 fn main() {
     let file_name = "day3.in";
     let content = fs::read_to_string(file_name).expect("Failed to read input file");
-    let input = content.lines().collect::<Vec<&str>>();
+    let input = content;
     println!("Part 1: {}", part1(&input));
     println!("Part 2: {}", part2(&input));
 }

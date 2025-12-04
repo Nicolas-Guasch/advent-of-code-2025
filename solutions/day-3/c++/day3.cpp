@@ -35,11 +35,10 @@ long long int greedy(std::string_view batteryBank) {
     long long int result = 0;
     int digits = DIGITS;
     int pos = 0;
-    while (digits) {
+    while (digits--) {
         int window = (static_cast<int>(batteryBank.size()) - pos) - digits + 1;
         int bestPos = maxJoltagePosition(batteryBank, pos, window);
         result = result * 10 + batteryBank[bestPos] - '0';
-        digits--;
         pos = bestPos + 1;
     }
     return result;

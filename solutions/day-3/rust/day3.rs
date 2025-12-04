@@ -1,9 +1,8 @@
+use std::cmp::Ordering;
 use std::fs;
 
 fn max_joltage(battery_bank: &str) -> i64 {
-    let mut joltages = battery_bank
-        .chars()
-        .map(|c| c.to_digit(10).expect("Failed to parse digit") as i64);
+    let mut joltages = battery_bank.bytes().map(|b| (b - b'0') as i64);
 
     let first_joltage = match joltages.next() {
         Some(d) => d,
@@ -28,35 +27,33 @@ fn part1(input: &str) -> i64 {
     input.lines().map(max_joltage).sum()
 }
 
-fn max_joltage_position(values: &[i64], pos: usize, window: usize) -> usize {
-    values[pos..pos + window]
+fn max_joltage_position(values: &[u8], pos: usize, window: usize) -> (usize, u8) {
+    let (offset, &max_value) = values[pos..pos + window]
         .iter()
         .enumerate()
-        .max_by_key(|(i, &x)| (x, std::cmp::Reverse(*i)))
-        .expect("Failed to find max joltage position")
-        .0
-        + pos
+        .max_by(|(_, a), (_, b)| a.cmp(b).then(Ordering::Greater))
+        .expect("Failed to find max joltage position");
+
+    (pos + offset, max_value)
 }
 
 const DIGITS: usize = 12;
 
 fn greedy(battery_bank: &str) -> i64 {
-    let joltages: Vec<i64> = battery_bank
-        .chars()
-        .map(|c| c.to_digit(10).expect("Failed to parse digit") as i64)
-        .collect();
+    let bytes = battery_bank.as_bytes();
 
-    (1..=DIGITS)
-        .rev()
-        .fold((0, 0), |(pos, current_joltage), d| {
-            let window = joltages.len() - pos - d + 1;
-            let next_digit = max_joltage_position(&joltages, pos, window);
-            (
-                next_digit + 1,
-                current_joltage * 10 + joltages[next_digit] as i64,
-            )
-        })
-        .1
+    let mut result = [0u8; DIGITS];
+    let mut current_pos = 0;
+
+    for remaining in (1..=DIGITS).rev() {
+        let window = bytes.len() - current_pos - remaining + 1;
+        let (next_pos, byte) = max_joltage_position(bytes, current_pos, window);
+        result[DIGITS - remaining] = byte;
+        current_pos = next_pos + 1;
+    }
+
+    let s = str::from_utf8(&result).expect("Failed to convert to string");
+    s.parse::<i64>().expect("Failed to parse string to i64")
 }
 
 fn part2(input: &str) -> i64 {
@@ -65,8 +62,7 @@ fn part2(input: &str) -> i64 {
 
 fn main() {
     let file_name = "day3.in";
-    let content = fs::read_to_string(file_name).expect("Failed to read input file");
-    let input = content;
+    let input = fs::read_to_string(file_name).expect("Failed to read input file");
     println!("Part 1: {}", part1(&input));
     println!("Part 2: {}", part2(&input));
 }

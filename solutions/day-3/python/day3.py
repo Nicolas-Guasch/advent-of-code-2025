@@ -1,35 +1,31 @@
+from itertools import accumulate
+from functools import reduce
+from pathlib import Path
+
+
 def part1(lines):
-    total_joltage = 0
+    def max_joltage(bank):
+        joltages = [int(d) for d in bank]
+        max_prefixes = list(accumulate(joltages, max))
+        return max(p * 10 + d for p, d in zip(max_prefixes, joltages[1:]))
 
-    for battery_bank in lines:
-        max_joltage = 0
-        highest_battery = int(battery_bank[0])
-        for battery in battery_bank[1:]:
-            battery_joltage = int(battery)
-            produced_joltage = highest_battery * 10 + battery_joltage
-            max_joltage = max(max_joltage, produced_joltage)
-            highest_battery = max(highest_battery, battery_joltage)
-        total_joltage += max_joltage
-
-    return f"The total output joltage with two batteries per bank is: {total_joltage}"
+    return f"The total output joltage with two batteries per bank is: {sum(max_joltage(bank) for bank in lines)}"
 
 
-def max_joltage_position(battery_bank, pos, window):
-    return max(range(pos, pos + window), key=lambda i: int(battery_bank[i]))
+def max_joltage_position(values, pos, window):
+    return max(range(pos, pos + window), key=values.__getitem__)
 
 
-DIGITS = 12
+def greedy(battery_bank, digits=12):
+    joltages = [int(d) for d in battery_bank]
 
+    def pick_next_digit(state, remaining_digits):
+        pos, current_joltage = state
+        window = len(joltages) - pos - remaining_digits + 1
+        next_digit = max_joltage_position(joltages, pos, window)
+        return (next_digit + 1, current_joltage * 10 + joltages[next_digit])
 
-def greedy(battery_bank):
-    max_joltage = 0
-    pos = 0
-    for digits in range(DIGITS, 0, -1):
-        window = len(battery_bank) - pos - digits + 1
-        pos = max_joltage_position(battery_bank, pos, window)
-        max_joltage = max_joltage * 10 + int(battery_bank[pos])
-        pos += 1
-    return max_joltage
+    return reduce(pick_next_digit, range(digits, 0, -1), (0, 0))[1]
 
 
 def part2(banks):
@@ -38,7 +34,6 @@ def part2(banks):
 
 file_name = "day3.in"
 
-with open(file_name, "r") as input_file:
-    lines = input_file.read().splitlines()
-    print(part1(lines))
-    print(part2(lines))
+lines = Path(file_name).read_text().splitlines()
+print(part1(lines))
+print(part2(lines))

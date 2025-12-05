@@ -1,5 +1,6 @@
 from pathlib import Path
 from itertools import product
+from collections import deque
 
 
 class Grid:
@@ -43,22 +44,23 @@ def part1(diagram):
 
 def part2(diagram):
     diagram = Grid(diagram)
-    queue = [(i, j) for i, j in diagram.positions()
-             if diagram[i, j] == '@' and accessible(i, j, diagram)]
+    queue = deque([(i, j) for i, j in diagram.positions()
+                   if diagram[i, j] == '@' and accessible(i, j, diagram)])
 
-    accessibleRolls = 0
-    while (len(queue)):
-        accessibleRolls += 1
-        (i, j) = queue.pop(0)
+    accessible_rolls = 0
+    while queue:
+        accessible_rolls += 1
+        (i, j) = queue.popleft()
         diagram[i, j] = '.'
-        queue += [(ii, jj)
-                  for ii, jj in diagram.neighbors(i, j) if diagram[ii, jj] == '@' and just_unlocked(ii, jj, diagram)]
+        queue.extend([(ii, jj)
+                      for ii, jj in diagram.neighbors(i, j)
+                      if diagram[ii, jj] == '@' and just_unlocked(ii, jj, diagram)])
 
-    return f'There are {accessibleRolls} rolls of paper accessible by forklift with removal.'
+    return f'There are {accessible_rolls} rolls of paper accessible by forklift with removal.'
 
 
 file_name = "day4.in"
 
 diagram = [list(s) for s in Path(file_name).read_text().splitlines()]
-print(part1(diagram))
-print(part2(diagram))
+print(part1([row[:] for row in diagram]))
+print(part2([row[:] for row in diagram]))

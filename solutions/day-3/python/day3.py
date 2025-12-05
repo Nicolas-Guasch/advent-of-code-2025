@@ -3,13 +3,13 @@ from functools import reduce
 from pathlib import Path
 
 
-def part1(lines):
+def part1(banks):
     def max_joltage(bank):
         joltages = [int(d) for d in bank]
         max_prefixes = list(accumulate(joltages, max))
         return max(p * 10 + d for p, d in zip(max_prefixes, joltages[1:]))
 
-    return f"The total output joltage with two batteries per bank is: {sum(max_joltage(bank) for bank in lines)}"
+    return f"The total output joltage with two batteries per bank is: {sum(max_joltage(bank) for bank in banks)}"
 
 
 def max_joltage_position(values, pos, window):

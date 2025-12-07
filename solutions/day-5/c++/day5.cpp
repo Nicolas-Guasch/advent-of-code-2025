@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <climits>
 #include <cstdlib>
 #include <filesystem>
 #include <format>
@@ -72,7 +73,27 @@ std::string part1(std::ifstream &inputFile) {
     return std::format("{} of the available ingredient IDs are fresh", fresh);
 }
 
-std::string part2(std::ifstream &inputFile) { return "Part 2"; }
+std::string part2(std::ifstream &inputFile) {
+    std::ostringstream buffer;
+    buffer << inputFile.rdbuf();
+    auto [rangeInput, _] = splitOnce(buffer.str(), "\n\n");
+    rangeInput += "\n";
+    std::vector<std::pair<long long int, long long int>> freshIds = {};
+    parseRanges(rangeInput, freshIds);
+
+    std::sort(freshIds.begin(), freshIds.end());
+    long long int freshCount = 0;
+    long long int maxId = LLONG_MIN;
+    for (auto [l, r] : freshIds) {
+        if (r > maxId) {
+            if (l <= maxId)
+                l = maxId + 1;
+            freshCount += r - l + 1;
+            maxId = r;
+        }
+    }
+    return std::format("There are {} fresh ingredient IDs", freshCount);
+}
 
 int main() {
     namespace fs = std::filesystem;

@@ -115,15 +115,7 @@ int main() {
     }
 
     std::cout << part1(inputFile) << std::endl;
-
-    inputFile.close();
-    inputFile.open(inputFileName);
-
-    if (!inputFile) {
-        std::cerr << std::format("Couldn't open {}", inputFileName.string())
-                  << std::endl;
-        return 1;
-    }
-
+    inputFile.clear();
+    inputFile.seekg(0);
     std::cout << part2(inputFile) << std::endl;
 }

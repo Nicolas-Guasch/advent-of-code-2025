@@ -42,20 +42,14 @@ int main() {
     std::ifstream inputFile;
     inputFile.open(inputFileName);
 
-    if (!inputFile.is_open()) {
+    if (!inputFile) {
         std::cerr << "Couldn't open " << inputFileName << "." << std::endl;
         return 1;
     }
 
     std::cout << part1(inputFile) << std::endl;
-    inputFile.close();
-    inputFile.open(inputFileName);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Couldn't open " << inputFileName << "." << std::endl;
-        return 1;
-    }
-
+    inputFile.clear();
+    inputFile.seekg(0);
     std::cout << part2(inputFile) << std::endl;
 
     return 0;

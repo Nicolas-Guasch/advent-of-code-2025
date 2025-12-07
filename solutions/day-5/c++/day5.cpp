@@ -65,18 +65,20 @@ std::string part2(std::string_view input) {
     auto [rangeInput, _] = splitOnce(input, "\n\n");
     std::vector<std::pair<long long int, long long int>> freshIds =
         parseRanges(rangeInput);
-
     std::ranges::sort(freshIds);
-    long long int freshCount = 0;
-    long long int maxId = std::numeric_limits<long long int>::min();
-    for (auto [l, r] : freshIds) {
-        if (r > maxId) {
-            if (l <= maxId)
-                l = maxId + 1;
-            freshCount += r - l + 1;
-            maxId = r;
-        }
-    }
+
+    auto [freshCount, maxId] = std::ranges::fold_left(
+        freshIds, std::pair{0LL, std::numeric_limits<long long int>::min()},
+        [](auto acc, auto range) {
+            auto [count, maxSeen] = acc;
+            auto [l, r] = range;
+            if (r > maxSeen) {
+                l = std::max(l, maxSeen + 1);
+                count += r - l + 1;
+                maxSeen = r;
+            }
+            return std::pair{count, maxSeen};
+        });
     return std::format("There are {} fresh ingredient IDs", freshCount);
 }
 

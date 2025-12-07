@@ -1,71 +1,59 @@
 #include <algorithm>
 #include <climits>
-#include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <print>
+#include <ranges>
 #include <sstream>
 #include <string>
-#include <tuple>
+#include <string_view>
 #include <vector>
 
-std::tuple<std::string, std::string> splitOnce(std::string s,
-                                               std::string delim) {
-    int splitPos = static_cast<int>(s.find(delim));
-    return std::make_tuple(s.substr(0, splitPos),
-                           s.substr(splitPos + ssize(delim)));
+auto splitOnce(std::string_view s, std::string_view delim) {
+    size_t splitPos = s.find(delim);
+    return std::pair{s.substr(0, splitPos), s.substr(splitPos + delim.size())};
 }
 
-void splitLines(std::string &s, std::vector<std::string> &out) {
-    out.reserve(std::count(s.begin(), s.end(), '\n'));
-    int start = 0, end = static_cast<int>(s.find("\n"));
-    while (start < ssize(s)) {
-        out.push_back(s.substr(start, end - start));
-        start = end + 1;
-        end = static_cast<int>(s.find('\n', start));
-    }
+auto parseLLI(std::string_view s) {
+    long long int result = 0;
+    std::from_chars(s.data(), s.data() + s.size(), result);
+    return result;
 }
 
-void parseRanges(std::string input,
-                 std::vector<std::pair<long long int, long long int>> &out) {
-    std::vector<std::string> lines = {};
-    splitLines(input, lines);
-    for (auto line : lines) {
-        auto [l, r] = splitOnce(line, "-");
-        out.emplace_back(std::stoll(l), std::stoll(r));
-    }
+auto parseRanges(std::string_view input) {
+    return input | std::views::split('\n') |
+           std::views::transform([](auto line) {
+               auto [l, r] = splitOnce(std::string_view(line), "-");
+               return std::pair{parseLLI(l), parseLLI(r)};
+           }) |
+           std::ranges::to<std::vector>();
 }
 
-void parseIds(std::string input, std::vector<long long int> &out) {
-    std::vector<std::string> lines = {};
-    splitLines(input, lines);
-    for (auto line : lines) {
-        out.push_back(std::stoll(line));
-    }
+auto parseIds(std::string_view input) {
+    return input | std::views::split('\n') |
+           std::views::transform(
+               [](auto line) { return parseLLI(std::string_view(line)); }) |
+           std::ranges::to<std::vector>();
 }
 
-std::string part1(std::ifstream &inputFile) {
-    std::ostringstream buffer;
-    buffer << inputFile.rdbuf();
-    auto [rangeInput, IdInput] = splitOnce(buffer.str(), "\n\n");
-    rangeInput += "\n";
-    std::vector<std::pair<long long int, long long int>> freshIds = {};
-    std::vector<long long int> ids = {};
-    parseRanges(rangeInput, freshIds);
-    parseIds(IdInput, ids);
+std::string part1(std::string_view input) {
+    auto [rangeInput, IdInput] = splitOnce(input, "\n\n");
+    auto freshIds = parseRanges(rangeInput);
+    auto ids = parseIds(IdInput);
 
-    std::sort(freshIds.begin(), freshIds.end());
-    std::sort(ids.begin(), ids.end());
+    std::ranges::sort(freshIds);
+    std::ranges::sort(ids);
 
-    int idPos = 0, fresh = 0;
+    auto idPos = 0z;
+    int fresh = 0;
     for (auto [l, r] : freshIds) {
-        if (idPos == ssize(ids))
+        if (idPos == std::ssize(ids))
             break;
-        while (idPos < ssize(ids) && ids[idPos] < l)
+        while (idPos < std::ssize(ids) && ids[idPos] < l)
             idPos++;
-        while (idPos < ssize(ids) && ids[idPos] <= r) {
+        while (idPos < std::ssize(ids) && ids[idPos] <= r) {
             idPos++;
             fresh++;
         }
@@ -73,17 +61,14 @@ std::string part1(std::ifstream &inputFile) {
     return std::format("{} of the available ingredient IDs are fresh", fresh);
 }
 
-std::string part2(std::ifstream &inputFile) {
-    std::ostringstream buffer;
-    buffer << inputFile.rdbuf();
-    auto [rangeInput, _] = splitOnce(buffer.str(), "\n\n");
-    rangeInput += "\n";
-    std::vector<std::pair<long long int, long long int>> freshIds = {};
-    parseRanges(rangeInput, freshIds);
+std::string part2(std::string_view input) {
+    auto [rangeInput, _] = splitOnce(input, "\n\n");
+    std::vector<std::pair<long long int, long long int>> freshIds =
+        parseRanges(rangeInput);
 
-    std::sort(freshIds.begin(), freshIds.end());
+    std::ranges::sort(freshIds);
     long long int freshCount = 0;
-    long long int maxId = LLONG_MIN;
+    long long int maxId = std::numeric_limits<long long int>::min();
     for (auto [l, r] : freshIds) {
         if (r > maxId) {
             if (l <= maxId)
@@ -115,8 +100,9 @@ int main() {
         return 1;
     }
 
-    std::cout << part1(inputFile) << std::endl;
-    inputFile.clear();
-    inputFile.seekg(0);
-    std::cout << part2(inputFile) << std::endl;
+    std::ostringstream buffer;
+    buffer << inputFile.rdbuf();
+    std::string input = buffer.str();
+    std::println("{}", part1(input));
+    std::println("{}", part2(input));
 }

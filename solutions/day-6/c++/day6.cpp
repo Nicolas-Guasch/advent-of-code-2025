@@ -47,7 +47,7 @@ std::vector<Problem> partitionProblems(std::string_view input, bool vertical) {
         if (vertical) {
             long long int numLines = operandLines.size();
             for (auto pos : std::views::iota(0, std::ssize(operandLines[0]))) {
-                int operandValue = 0;
+                long long int operandValue = 0;
                 for (auto line : std::views::iota(0LL, numLines)) {
                     auto digit = operandLines[numLines - 1 - line][pos];
                     if (digit != ' ') {
@@ -59,7 +59,7 @@ std::vector<Problem> partitionProblems(std::string_view input, bool vertical) {
         } else {
 
             for (auto operandLine : operandLines) {
-                int operandValue = 0;
+                long long int operandValue = 0;
                 for (auto digit : operandLine) {
                     if (digit != ' ') {
                         operandValue = operandValue * 10 + (digit - '0');
@@ -73,11 +73,11 @@ std::vector<Problem> partitionProblems(std::string_view input, bool vertical) {
 }
 
 long long int evaluateProblem(const Problem &problem) {
-    return std::ranges::fold_left(
-        problem.operands, problem.op == '+' ? 0 : 1,
-        [&problem](long long int acc, long long int val) {
-            return problem.op == '+' ? acc + val : acc * val;
-        });
+    char op = problem.op;
+    return std::ranges::fold_left(problem.operands, op == '+' ? 0 : 1,
+                                  [op](long long int acc, long long int val) {
+                                      return op == '+' ? acc + val : acc * val;
+                                  });
 }
 
 long long int calculateGrandTotal(const std::vector<Problem> &problems) {

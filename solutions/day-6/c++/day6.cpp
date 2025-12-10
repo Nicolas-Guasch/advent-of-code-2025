@@ -97,11 +97,11 @@ std::string part2(std::string_view input) {
                        std::views::take(nextOperatorIndex - index);
             }) |
             std::ranges::to<std::vector>();
-        for (const auto &[a, b, c, d] :
-             std::views::zip(operandLines[3], operandLines[2], operandLines[1],
-                             operandLines[0])) {
+        long long int numLines = operandLines.size();
+        for (auto pos : std::views::iota(0, std::ssize(operandLines[0]))) {
             int operandValue = 0;
-            for (auto digit : {a, b, c, d}) {
+            for (auto line : std::views::iota(0LL, numLines)) {
+                auto digit = operandLines[numLines - 1 - line][pos];
                 if (digit != ' ') {
                     operandValue = operandValue * 10 + (digit - '0');
                 }

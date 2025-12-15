@@ -11,6 +11,13 @@
 struct Problem {
     char op;
     std::vector<long long int> operands;
+    long long int evaluate() const {
+        return std::ranges::fold_left(
+            operands, op == '+' ? 0 : 1,
+            [this](long long int acc, long long int val) {
+                return op == '+' ? acc + val : acc * val;
+            });
+    }
 };
 
 std::vector<Problem> partitionProblems(std::string_view input, bool vertical) {
@@ -72,18 +79,12 @@ std::vector<Problem> partitionProblems(std::string_view input, bool vertical) {
     return problems;
 }
 
-long long int evaluateProblem(const Problem &problem) {
-    char op = problem.op;
-    return std::ranges::fold_left(problem.operands, op == '+' ? 0 : 1,
-                                  [op](long long int acc, long long int val) {
-                                      return op == '+' ? acc + val : acc * val;
-                                  });
-}
-
 long long int calculateGrandTotal(const std::vector<Problem> &problems) {
-    return std::ranges::fold_left(problems |
-                                      std::views::transform(evaluateProblem),
-                                  0LL, std::plus<long long int>());
+    return std::ranges::fold_left(
+        problems | std::views::transform([](const Problem &problem) {
+            return problem.evaluate();
+        }),
+        0LL, std::plus<long long int>());
 }
 
 std::string part1(std::string_view input) {

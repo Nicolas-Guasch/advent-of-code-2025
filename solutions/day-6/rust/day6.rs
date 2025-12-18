@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 use std::fs;
-use std::str::from_utf8;
 
 #[derive(Debug)]
 enum Operator {

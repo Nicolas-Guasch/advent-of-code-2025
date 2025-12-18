@@ -34,9 +34,8 @@ void parseIntervals(std::ifstream &inputFile,
     constexpr auto dash{"-"sv};
 
     for (const auto subrange : std::views::split(line, delim)) {
-        std::string_view token_view(subrange);
         std::vector<long long int> parts =
-            std::views::split(token_view, dash) |
+            subrange | std::views::split(dash) |
             std::views::transform(
                 [](auto &&pair) { return viewToLLI(std::string_view(pair)); }) |
             std::ranges::to<std::vector>();
@@ -110,7 +109,7 @@ std::string part2(std::ifstream &inputFile) {
     }
 
     return std::format(
-        "Sum of invalid IDs, : {}",
+        "Sum of invalid IDs, with at least 2 repetitions: {}",
         std::accumulate(invalidIds.begin(), invalidIds.end(), 0LL));
 }
 

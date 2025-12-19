@@ -5,9 +5,9 @@
 #include <map>
 #include <print>
 #include <ranges>
-#include <set>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 struct Grid {
@@ -55,6 +55,25 @@ struct Graph {
     std::map<int, std::vector<int>> edges;
     std::vector<int> diagramSkyline;
 
+    void dfs(int node, std::unordered_set<int> &visited) {
+        visited.insert(node);
+        for (auto neighbor : edges[node]) {
+            if (!visited.contains(neighbor)) {
+                dfs(neighbor, visited);
+            }
+        }
+    }
+
+    void dagSum(int node, std::map<int, long long int> &subTreeSize) {
+        subTreeSize[node] = 2 - ssize(edges[node]);
+        for (auto neighbor : edges[node]) {
+            if (!subTreeSize.contains(neighbor)) {
+                dagSum(neighbor, subTreeSize);
+            }
+            subTreeSize[node] += subTreeSize[neighbor];
+        }
+    }
+
   public:
     Graph(int _n) : width(_n) { diagramSkyline = std::vector<int>(width, -1); }
 
@@ -67,19 +86,10 @@ struct Graph {
                         std::ranges::to<std::vector>();
     }
 
-    std::set<int> dfs(int startJ) {
-        std::set<int> visited;
+    std::unordered_set<int> dfs(int startJ) {
+        std::unordered_set<int> visited;
         dfs(diagramSkyline[startJ], visited);
         return visited;
-    }
-
-    void dfs(int node, std::set<int> &visited) {
-        visited.insert(node);
-        for (auto neighbor : edges[node]) {
-            if (!visited.contains(neighbor)) {
-                dfs(neighbor, visited);
-            }
-        }
     }
 
     long long int dagSum(int startJ) {
@@ -88,19 +98,9 @@ struct Graph {
         dagSum(root, subTreeSize);
         return subTreeSize[root];
     }
-
-    void dagSum(int node, std::map<int, long long int> &subTreeSize) {
-        subTreeSize[node] = 2 - ssize(edges[node]);
-        for (auto neighbor : edges[node]) {
-            if (!subTreeSize.contains(neighbor)) {
-                dagSum(neighbor, subTreeSize);
-            }
-            subTreeSize[node] += subTreeSize[neighbor];
-        }
-    }
 };
 
-std::string part1(std::string_view input) {
+auto parse(std::string_view input) {
     Grid diagram = Grid(input | std::views::split('\n') |
                         std::views::transform([](auto line) {
                             return std::string(std::string_view(line));
@@ -123,34 +123,18 @@ std::string part1(std::string_view input) {
         return diagram[i, j] == 'S';
     });
     auto [_, startCol] = *it;
+    return std::pair{std::move(graph), startCol};
+}
+
+std::string part1(std::string_view input) {
+    auto [graph, startCol] = parse(input);
     long long int result = graph.dfs(startCol).size();
     return std::format(
         "The beam will be split {} times in the manifold diagram.", result);
 }
 
 std::string part2(std::string_view input) {
-    Grid diagram = Grid(input | std::views::split('\n') |
-                        std::views::transform([](auto line) {
-                            return std::string(std::string_view(line));
-                        }) |
-                        std::ranges::to<std::vector>());
-    Graph graph = std::ranges::fold_right(
-        diagram.positions() | std::views::filter([&diagram](auto pos) {
-            auto [i, j] = pos;
-            return diagram[i, j] == '^';
-        }),
-        Graph(diagram.width()), [](auto pos, auto acc) {
-            auto [i, j] = pos;
-            acc.addNode(j);
-            return acc;
-        });
-
-    auto positions = diagram.positions();
-    auto it = std::ranges::find_if(positions, [&diagram](auto pos) {
-        auto [i, j] = pos;
-        return diagram[i, j] == 'S';
-    });
-    auto [_, startCol] = *it;
+    auto [graph, startCol] = parse(input);
     long long int result = graph.dagSum(startCol);
     return std::format("Following the many-worlds interpretation, the tachyon "
                        "would end up on {} different timelines.",

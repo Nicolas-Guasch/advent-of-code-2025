@@ -1,73 +1,73 @@
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from functools import cache
 from itertools import product
 from pathlib import Path
+from typing import Iterator
 
 
 @dataclass
 class Grid:
     data: list[str]
 
-    def in_bounds(self, i: int, j: int) -> bool:
-        return 0 <= i < len(self.data) and 0 <= j < len(self.data[i])
+    def __post_init__(self):
+        self.height = len(self.data)
+        self.width = len(self.data[0]) if self.data else 0
 
-    def positions(self) -> list[tuple[int, int]]:
+    def __getitem__(self, pos: tuple[int, int]) -> str:
+        return self.data[pos[0]][pos[1]]
+
+    def in_bounds(self, i: int, j: int) -> bool:
+        return 0 <= i < self.height and 0 <= j < self.width
+
+    def positions(self) -> Iterator[tuple[int, int]]:
         return product(range(len(self.data)), range(len(self.data[0])))
 
-    def neighbors(self, i: int, j: int) -> list[tuple[int, int]]:
-        return [(ii, jj) for ii, jj in product(range(i-1, i+2), range(j-1, j+2)) if self.in_bounds(ii, jj) and (ii, jj) != (i, j)]
+    def find(self, char: str) -> tuple[int, int]:
+        return next((i, j) for i, j in self.positions() if self[i, j] == char)
 
 
+@dataclass
 class Graph:
-    edges: dict[int, list[int]]
-    width: int
-    diagram_skyline: dict[int]
-
-    def __init__(self, width: int):
-        self.width = width
-        self.diagram_skyline = defaultdict(lambda: -1)
-        self.edges = defaultdict(list)
+    edges: dict[int, list[int]] = field(
+        default_factory=lambda: defaultdict(list))
+    diagram_skyline: dict[int] = field(
+        default_factory=lambda: defaultdict(lambda: -1))
 
     def add_node(self, j: int):
         u = len(self.edges)
         self.diagram_skyline[j] = u
-        self.edges[u] = [adjacent for adjacent in [
-            self.diagram_skyline[j-1], self.diagram_skyline[j+1]] if adjacent != -1]
+        self.edges[u] = [adjacent for adjacent in (
+            self.diagram_skyline[j-1], self.diagram_skyline[j+1]) if adjacent != -1]
 
     def dfs(self, start_column: int) -> set[int]:
         visited = set[int]()
         root = self.diagram_skyline[start_column]
-        self._dfs(root, visited)
+
+        def _dfs(j: int):
+            visited.add(j)
+            for adjacent in self.edges[j]:
+                if adjacent not in visited:
+                    _dfs(adjacent)
+        _dfs(root)
         return visited
 
-    def _dfs(self, j: int, visited: set[int]):
-        visited.add(j)
-        for adjacent in self.edges[j]:
-            if adjacent not in visited:
-                self._dfs(adjacent, visited)
-
     def dag_sum(self, start_column: int) -> int:
-        sub_tree_size = dict[int, int]()
         root = self.diagram_skyline[start_column]
-        self._dag_sum(root, sub_tree_size)
-        return sub_tree_size[root]
 
-    def _dag_sum(self, j: int, sub_tree_size: dict[int, int]):
-        sub_tree_size[j] = 2 - len(self.edges[j])
-        for adjacent in self.edges[j]:
-            if adjacent not in sub_tree_size:
-                self._dag_sum(adjacent, sub_tree_size)
-            sub_tree_size[j] += sub_tree_size[adjacent]
+        @cache
+        def compute(j: int):
+            return 2 - len(self.edges[j]) + sum(compute(adj) for adj in self.edges[j])
+        return compute(root)
 
 
 def parse(input_data: str) -> tuple[Graph, int]:
     grid = Grid(input_data.splitlines())
-    graph = Graph(len(grid.data[0]))
+    graph = Graph()
     for i, j in reversed(list(grid.positions())):
-        if grid.data[i][j] == '^':
+        if grid[i, j] == '^':
             graph.add_node(j)
-    start_column = next(j for i, j in grid.positions()
-                        if grid.data[i][j] == 'S')
+    _, start_column = grid.find('S')
     return graph, start_column
 
 
